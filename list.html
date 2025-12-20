@@ -18,6 +18,8 @@
     button:active { transform: translateY(1px); box-shadow: 0 4px 16px rgba(63, 111, 208, 0.25); }
     button.ghost { background: transparent; border: 1px solid #d7d9e2; color: #3f6fd0; box-shadow: none; }
     button.ghost:active { box-shadow: none; }
+    button.danger { background: linear-gradient(135deg, #f96060, #de2d2d); box-shadow: 0 10px 25px rgba(222, 45, 45, 0.35); }
+    button.danger:active { box-shadow: 0 6px 18px rgba(222, 45, 45, 0.4); }
     button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
     .list-card { margin-top: 1.5rem; background: #fff; border: 1px solid #d7d9e2; border-radius: 16px; padding: 1rem; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04); }
     ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
@@ -87,6 +89,7 @@
       <div class="controls">
         <button type="submit" id="add-btn">Add</button>
         <button type="button" id="clear-btn" class="ghost" aria-live="off">Clear checked</button>
+        <button type="button" id="clear-all-btn" class="danger" aria-live="off">Remove all</button>
       </div>
       <label for="items">Items</label>
       <textarea id="items" name="items" placeholder="Milk&#10;Bread&#10;Eggs" aria-describedby="helper"></textarea>
@@ -100,6 +103,7 @@
     const list = document.getElementById('items-list');
     const emptyNote = document.getElementById('empty-note');
     const clearBtn = document.getElementById('clear-btn');
+    const clearAllBtn = document.getElementById('clear-all-btn');
     const STORAGE_KEY = 'quick-list-items';
 
     let itemsState = loadItemsFromStorage();
@@ -171,7 +175,7 @@
       list.innerHTML = '';
       if (!itemsState.length) {
         emptyNote.hidden = false;
-        updateClearButtonState();
+        updateControlButtons();
         return;
       }
       emptyNote.hidden = true;
@@ -200,7 +204,7 @@
         fragment.appendChild(li);
       });
       list.appendChild(fragment);
-      updateClearButtonState();
+      updateControlButtons();
     }
 
     function toggleItem(id, checked) {
@@ -225,10 +229,29 @@
       renderList();
     }
 
-    function updateClearButtonState() {
-      if (!clearBtn) return;
+    function clearAllItems() {
+      if (!itemsState.length) {
+        return;
+      }
+      const message = itemsState.length === 1
+        ? 'Remove the only item in your list?'
+        : `Remove all ${itemsState.length} items?`;
+      if (!window.confirm(`${message} This action cannot be undone.`)) {
+        return;
+      }
+      itemsState = [];
+      persistState();
+      renderList();
+    }
+
+    function updateControlButtons() {
       const hasChecked = itemsState.some(item => item.checked);
-      clearBtn.disabled = !hasChecked;
+      if (clearBtn) {
+        clearBtn.disabled = !hasChecked;
+      }
+      if (clearAllBtn) {
+        clearAllBtn.disabled = itemsState.length === 0;
+      }
     }
 
     form.addEventListener('submit', (event) => {
@@ -236,7 +259,12 @@
       addItemsFromInput();
     });
 
-    clearBtn.addEventListener('click', clearCheckedItems);
+    if (clearBtn) {
+      clearBtn.addEventListener('click', clearCheckedItems);
+    }
+    if (clearAllBtn) {
+      clearAllBtn.addEventListener('click', clearAllItems);
+    }
 
     function isEnterKey(event) {
       const key = event.key || event.code || '';
