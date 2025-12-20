@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick List</title>
+  <style>
+    :root { color-scheme: light dark; font-family: "Inter", system-ui, -apple-system, sans-serif; }
+    body { margin: 0; min-height: 100vh; background: #f6f7fb; color: #13141f; display: flex; justify-content: center; }
+    main { width: min(720px, 100%); padding: 1.25rem 1rem 2.5rem; }
+    h1 { margin: 0 0 0.75rem; letter-spacing: -0.02em; }
+    p { margin: 0 0 1.25rem; color: #3b3d4d; }
+    label { display: block; font-weight: 600; margin-bottom: 0.35rem; }
+    textarea { width: 100%; min-height: 140px; border-radius: 14px; border: 1px solid #d7d9e2; padding: 0.9rem 1rem; font-size: 1rem; resize: vertical; background: #fff; box-sizing: border-box; }
+    textarea:focus { outline: 2px solid #5b8def; outline-offset: 2px; }
+    .controls { margin-top: 0.75rem; display: flex; gap: 0.75rem; }
+    button { flex: 1; padding: 0.9rem 1rem; border-radius: 14px; border: none; background: linear-gradient(135deg, #5b8def, #3f6fd0); color: #fff; font-weight: 700; font-size: 1rem; cursor: pointer; box-shadow: 0 10px 30px rgba(63, 111, 208, 0.3); touch-action: manipulation; }
+    button:active { transform: translateY(1px); box-shadow: 0 4px 16px rgba(63, 111, 208, 0.25); }
+    .list-card { margin-top: 1.5rem; background: #fff; border: 1px solid #d7d9e2; border-radius: 16px; padding: 1rem; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04); }
+    ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+    li { display: flex; align-items: center; gap: 0.65rem; background: #f7f8fc; border-radius: 12px; padding: 0.8rem; border: 1px solid #e7e9f2; transition: background 160ms ease, opacity 160ms ease; }
+    .list-card label { flex: 1; cursor: pointer; margin: 0; }
+    li.completed { background: #e4e7f4; color: #8c91a8; opacity: 0.7; }
+    li.completed label { text-decoration: line-through; color: inherit; }
+    input[type="checkbox"] { width: 22px; height: 22px; accent-color: #3f6fd0; }
+    .empty { color: #5a5d70; font-size: 0.95rem; }
+    @media (max-width: 640px) {
+      body { background: #eef1f7; }
+      main { padding: 1.25rem 0.85rem 2rem; }
+      button { font-size: 1.05rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Quick List</h1>
+    <p>Paste items separated by new lines, tap Add, and manage them as checkboxes.</p>
+    <section class="list-card" aria-live="polite" aria-label="Generated checkbox list">
+      <ul id="items-list"></ul>
+      <p id="empty-note" class="empty">Nothing here yet. Add some items above.</p>
+    </section>
+
+    <form id="input-form">
+      <label for="items">Items</label>
+      <textarea id="items" name="items" placeholder="Milk&#10;Bread&#10;Eggs" aria-describedby="helper"></textarea>
+      <p id="helper" class="empty">Each line becomes its own checkbox item.</p>
+      <div class="controls">
+        <button type="submit" id="add-btn">Add</button>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    const form = document.getElementById('input-form');
+    const textarea = document.getElementById('items');
+    const list = document.getElementById('items-list');
+    const emptyNote = document.getElementById('empty-note');
+
+    function renderList() {
+      const lines = textarea.value
+        .split(/\r\n?|\n|\r|\u2028|\u2029/)
+        .map(line => line.trim())
+        .filter(Boolean);
+      list.innerHTML = '';
+      if (!lines.length) {
+        emptyNote.hidden = false;
+        return;
+      }
+      emptyNote.hidden = true;
+      const fragment = document.createDocumentFragment();
+      lines.forEach((text, idx) => {
+        const li = document.createElement('li');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        const id = `item-${idx}`;
+        checkbox.id = id;
+        const label = document.createElement('label');
+        label.setAttribute('for', id);
+        label.textContent = text;
+        checkbox.addEventListener('change', () => handleToggle(li, checkbox));
+        li.addEventListener('click', (event) => {
+          if (event.target === checkbox || event.target.tagName === 'LABEL') {
+            return;
+          }
+          checkbox.checked = !checkbox.checked;
+          handleToggle(li, checkbox);
+        });
+        li.appendChild(checkbox);
+        li.appendChild(label);
+        fragment.appendChild(li);
+      });
+      list.appendChild(fragment);
+    }
+
+    function reorderList() {
+      const items = Array.from(list.children);
+      items
+        .sort((a, b) => Number(a.classList.contains('completed')) - Number(b.classList.contains('completed')))
+        .forEach(item => list.appendChild(item));
+    }
+
+    function handleToggle(itemEl, checkbox) {
+      itemEl.classList.toggle('completed', checkbox.checked);
+      reorderList();
+    }
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      renderList();
+    });
+  </script>
+</body>
+</html>
