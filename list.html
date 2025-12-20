@@ -13,9 +13,12 @@
     label { display: block; font-weight: 600; margin-bottom: 0.35rem; }
     textarea { width: 100%; min-height: 140px; border-radius: 14px; border: 1px solid #d7d9e2; padding: 0.9rem 1rem; font-size: 1rem; resize: vertical; background: #fff; box-sizing: border-box; }
     textarea:focus { outline: 2px solid #5b8def; outline-offset: 2px; }
-    .controls { margin-top: 0.75rem; display: flex; gap: 0.75rem; }
-    button { flex: 1; padding: 0.9rem 1rem; border-radius: 14px; border: none; background: linear-gradient(135deg, #5b8def, #3f6fd0); color: #fff; font-weight: 700; font-size: 1rem; cursor: pointer; box-shadow: 0 10px 30px rgba(63, 111, 208, 0.3); touch-action: manipulation; }
+    .controls { margin: 1.25rem 0 0.75rem; display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    button { flex: 1; padding: 0.9rem 1rem; border-radius: 14px; border: none; background: linear-gradient(135deg, #5b8def, #3f6fd0); color: #fff; font-weight: 700; font-size: 1rem; cursor: pointer; box-shadow: 0 10px 30px rgba(63, 111, 208, 0.3); touch-action: manipulation; min-width: 8rem; }
     button:active { transform: translateY(1px); box-shadow: 0 4px 16px rgba(63, 111, 208, 0.25); }
+    button.ghost { background: transparent; border: 1px solid #d7d9e2; color: #3f6fd0; box-shadow: none; }
+    button.ghost:active { box-shadow: none; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
     .list-card { margin-top: 1.5rem; background: #fff; border: 1px solid #d7d9e2; border-radius: 16px; padding: 1rem; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04); }
     ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
     li { display: flex; align-items: center; gap: 0.65rem; background: #f7f8fc; border-radius: 12px; padding: 0.8rem; border: 1px solid #e7e9f2; transition: background 160ms ease, opacity 160ms ease; }
@@ -37,16 +40,17 @@
     <p>Paste items separated by new lines, tap Add, and manage them as checkboxes.</p>
     <section class="list-card" aria-live="polite" aria-label="Generated checkbox list">
       <ul id="items-list"></ul>
-      <p id="empty-note" class="empty">Nothing here yet. Add some items above.</p>
+      <p id="empty-note" class="empty">Nothing here yet. Add some items using the form below.</p>
     </section>
 
     <form id="input-form">
+      <div class="controls">
+        <button type="submit" id="add-btn">Add</button>
+        <button type="button" id="clear-btn" class="ghost" aria-live="off">Clear checked</button>
+      </div>
       <label for="items">Items</label>
       <textarea id="items" name="items" placeholder="Milk&#10;Bread&#10;Eggs" aria-describedby="helper"></textarea>
       <p id="helper" class="empty">Each line becomes its own checkbox item.</p>
-      <div class="controls">
-        <button type="submit" id="add-btn">Add</button>
-      </div>
     </form>
   </main>
 
@@ -55,58 +59,172 @@
     const textarea = document.getElementById('items');
     const list = document.getElementById('items-list');
     const emptyNote = document.getElementById('empty-note');
+    const clearBtn = document.getElementById('clear-btn');
+    const STORAGE_KEY = 'quick-list-items';
 
-    function renderList() {
-      const lines = textarea.value
+    let itemsState = loadItemsFromStorage();
+    renderList();
+
+    function generateId() {
+      if (window.crypto?.randomUUID) {
+        return window.crypto.randomUUID();
+      }
+      return `item-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function loadItemsFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+          .map((item, index) => {
+            if (!item || typeof item.text !== 'string') return null;
+            return {
+              id: typeof item.id === 'string' ? item.id : `restored-${index}-${Date.now()}`,
+              text: item.text,
+              checked: Boolean(item.checked),
+            };
+          })
+          .filter(Boolean);
+      } catch {
+        return [];
+      }
+    }
+
+    function persistState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(itemsState));
+      } catch {
+        // Ignore storage failures (e.g., private mode)
+      }
+    }
+
+    function parseInputLines() {
+      return textarea.value
         .split(/\r\n?|\n|\r|\u2028|\u2029/)
         .map(line => line.trim())
         .filter(Boolean);
-      list.innerHTML = '';
+    }
+
+    function addItemsFromInput() {
+      const lines = parseInputLines();
       if (!lines.length) {
+        textarea.value = '';
+        return;
+      }
+      const newItems = lines.map(text => ({
+        id: generateId(),
+        text,
+        checked: false,
+      }));
+      const unchecked = itemsState.filter(item => !item.checked);
+      const checked = itemsState.filter(item => item.checked);
+      itemsState = [...unchecked, ...newItems, ...checked];
+      persistState();
+      renderList();
+      textarea.value = '';
+    }
+
+    function renderList() {
+      list.innerHTML = '';
+      if (!itemsState.length) {
         emptyNote.hidden = false;
+        updateClearButtonState();
         return;
       }
       emptyNote.hidden = true;
       const fragment = document.createDocumentFragment();
-      lines.forEach((text, idx) => {
+      itemsState.forEach((item) => {
         const li = document.createElement('li');
+        li.dataset.id = item.id;
+        if (item.checked) li.classList.add('completed');
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        const id = `item-${idx}`;
-        checkbox.id = id;
+        checkbox.id = item.id;
+        checkbox.checked = item.checked;
         const label = document.createElement('label');
-        label.setAttribute('for', id);
-        label.textContent = text;
-        checkbox.addEventListener('change', () => handleToggle(li, checkbox));
+        label.setAttribute('for', item.id);
+        label.textContent = item.text;
+        checkbox.addEventListener('change', () => toggleItem(item.id, checkbox.checked));
         li.addEventListener('click', (event) => {
           if (event.target === checkbox || event.target.tagName === 'LABEL') {
             return;
           }
           checkbox.checked = !checkbox.checked;
-          handleToggle(li, checkbox);
+          toggleItem(item.id, checkbox.checked);
         });
         li.appendChild(checkbox);
         li.appendChild(label);
         fragment.appendChild(li);
       });
       list.appendChild(fragment);
+      updateClearButtonState();
     }
 
-    function reorderList() {
-      const items = Array.from(list.children);
-      items
-        .sort((a, b) => Number(a.classList.contains('completed')) - Number(b.classList.contains('completed')))
-        .forEach(item => list.appendChild(item));
+    function toggleItem(id, checked) {
+      itemsState = itemsState.map(item =>
+        item.id === id ? { ...item, checked } : item
+      );
+      itemsState = [
+        ...itemsState.filter(item => !item.checked),
+        ...itemsState.filter(item => item.checked),
+      ];
+      persistState();
+      renderList();
     }
 
-    function handleToggle(itemEl, checkbox) {
-      itemEl.classList.toggle('completed', checkbox.checked);
-      reorderList();
+    function clearCheckedItems() {
+      const nextState = itemsState.filter(item => !item.checked);
+      if (nextState.length === itemsState.length) {
+        return;
+      }
+      itemsState = nextState;
+      persistState();
+      renderList();
+    }
+
+    function updateClearButtonState() {
+      if (!clearBtn) return;
+      const hasChecked = itemsState.some(item => item.checked);
+      clearBtn.disabled = !hasChecked;
     }
 
     form.addEventListener('submit', (event) => {
       event.preventDefault();
-      renderList();
+      addItemsFromInput();
+    });
+
+    clearBtn.addEventListener('click', clearCheckedItems);
+
+    function isEnterKey(event) {
+      const key = event.key || event.code || '';
+      return key === 'Enter' || key === 'Return' || event.keyCode === 13;
+    }
+
+    let shortcutLocked = false;
+    function triggerAddShortcut(event) {
+      if (shortcutLocked) return;
+      shortcutLocked = true;
+      event.preventDefault();
+      event.stopPropagation();
+      addItemsFromInput();
+      setTimeout(() => {
+        shortcutLocked = false;
+      }, 0);
+    }
+
+    textarea.addEventListener('keydown', (event) => {
+      if (event.shiftKey && isEnterKey(event)) {
+        triggerAddShortcut(event);
+      }
+    });
+
+    textarea.addEventListener('keypress', (event) => {
+      if (event.shiftKey && isEnterKey(event)) {
+        triggerAddShortcut(event);
+      }
     });
   </script>
 </body>
