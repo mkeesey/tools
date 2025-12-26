@@ -60,6 +60,22 @@
       body { background: #eef1f7; }
       main { padding: 1.25rem 0.85rem 2rem; }
       button { font-size: 1.05rem; }
+      .controls { flex-direction: column; }
+      button.danger { 
+        background: transparent; 
+        border: 1px solid #d7d9e2; 
+        color: #de2d2d; 
+        box-shadow: none;
+        font-size: 0.9rem;
+        padding: 0.7rem 1rem;
+        order: 3;
+      }
+      button.danger:active { 
+        box-shadow: none; 
+        background: #fef1f1;
+      }
+      button.ghost { order: 2; }
+      #add-btn { order: 1; }
     }
 
     @media (prefers-color-scheme: dark) {
@@ -73,6 +89,16 @@
       input[type="checkbox"] { border-color: #434864; background: transparent; }
       input[type="checkbox"]:checked { background: #7da8ff; border-color: #7da8ff; }
       .empty { color: #a1a6c4; }
+    }
+
+    @media (max-width: 640px) and (prefers-color-scheme: dark) {
+      button.danger { 
+        border-color: #3c4164; 
+        color: #f96060;
+      }
+      button.danger:active {
+        background: #2a1818;
+      }
     }
   </style>
 </head>
