@@ -261,7 +261,7 @@
     // Touch drag support
     let touchDragEl = null;
     let touchClone = null;
-    let touchStartY = 0;
+    let touchOffsetY = 0;
     let touchSourceId = null;
 
     function handleTouchStart(e) {
@@ -271,9 +271,10 @@
       if (!li) return;
       touchSourceId = li.dataset.id;
       touchDragEl = li;
-      touchStartY = e.touches[0].clientY;
+      const rect = li.getBoundingClientRect();
+      touchOffsetY = e.touches[0].clientY - rect.top;
       touchClone = li.cloneNode(true);
-      touchClone.style.cssText = 'position:fixed;z-index:1000;pointer-events:none;opacity:0.85;width:' + li.offsetWidth + 'px;left:' + li.getBoundingClientRect().left + 'px;top:' + li.getBoundingClientRect().top + 'px;';
+      touchClone.style.cssText = 'position:fixed;z-index:1000;pointer-events:none;opacity:0.85;width:' + rect.width + 'px;left:' + rect.left + 'px;top:' + rect.top + 'px;';
       document.body.appendChild(touchClone);
       li.classList.add('dragging');
     }
@@ -283,7 +284,7 @@
       e.preventDefault();
       const touch = e.touches[0];
       if (touchClone) {
-        touchClone.style.top = touch.clientY - touchClone.offsetHeight / 2 + 'px';
+        touchClone.style.top = touch.clientY - touchOffsetY + 'px';
       }
       const target = document.elementFromPoint(touch.clientX, touch.clientY);
       const targetLi = target?.closest('li');
@@ -345,17 +346,18 @@
         li.addEventListener('dragleave', handleDragLeave);
         li.addEventListener('drop', handleDrop);
         li.addEventListener('dragend', handleDragEnd);
-        handle.addEventListener('touchstart', handleTouchStart, { passive: false });
         li.appendChild(handle);
         li.appendChild(checkbox);
         li.appendChild(label);
         fragment.appendChild(li);
       });
       list.appendChild(fragment);
-      list.addEventListener('touchmove', handleTouchMove, { passive: false });
-      list.addEventListener('touchend', handleTouchEnd);
       updateControlButtons();
     }
+
+    list.addEventListener('touchstart', handleTouchStart, { passive: false });
+    list.addEventListener('touchmove', handleTouchMove, { passive: false });
+    list.addEventListener('touchend', handleTouchEnd);
 
     function toggleItem(id, checked) {
       itemsState = itemsState.map(item =>
