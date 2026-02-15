@@ -27,6 +27,11 @@
     .list-card label { flex: 1; cursor: pointer; margin: 0; color: inherit; }
     li.completed { background: #e4e7f4; color: #8c91a8; opacity: 0.7; }
     li.completed label { text-decoration: line-through; color: inherit; }
+    .drag-handle { flex-shrink: 0; cursor: grab; color: #b0b4c8; display: flex; align-items: center; padding: 0 0.15rem; touch-action: none; user-select: none; -webkit-user-select: none; }
+    .drag-handle:active { cursor: grabbing; }
+    .drag-handle svg { pointer-events: none; }
+    li.dragging { opacity: 0.4; }
+    li.drag-over { border-color: #5b8def; box-shadow: 0 0 0 2px rgba(91,141,239,0.3); }
     input[type="checkbox"] {
       flex-shrink: 0;
       width: 22px;
@@ -85,6 +90,8 @@
       input[type="checkbox"] { border-color: #434864; background: transparent; }
       input[type="checkbox"]:checked { background: #7da8ff; border-color: #7da8ff; }
       .empty { color: #a1a6c4; }
+      .drag-handle { color: #5a5f7d; }
+      li.drag-over { border-color: #7da8ff; box-shadow: 0 0 0 2px rgba(125,168,255,0.3); }
     }
 
     @media (max-width: 640px) and (prefers-color-scheme: dark) {
@@ -192,6 +199,117 @@
       textarea.value = '';
     }
 
+    function createDragHandle() {
+      const handle = document.createElement('span');
+      handle.className = 'drag-handle';
+      handle.setAttribute('aria-label', 'Drag to reorder');
+      handle.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="5" cy="3" r="1.5"/><circle cx="11" cy="3" r="1.5"/><circle cx="5" cy="8" r="1.5"/><circle cx="11" cy="8" r="1.5"/><circle cx="5" cy="13" r="1.5"/><circle cx="11" cy="13" r="1.5"/></svg>';
+      return handle;
+    }
+
+    let dragSourceId = null;
+
+    function handleDragStart(e) {
+      const li = e.target.closest('li');
+      if (!li) return;
+      dragSourceId = li.dataset.id;
+      li.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', li.dataset.id);
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const li = e.target.closest('li');
+      if (!li || li.dataset.id === dragSourceId) return;
+      list.querySelectorAll('li.drag-over').forEach(el => el.classList.remove('drag-over'));
+      li.classList.add('drag-over');
+    }
+
+    function handleDragLeave(e) {
+      const li = e.target.closest('li');
+      if (li) li.classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      const targetLi = e.target.closest('li');
+      if (!targetLi || !dragSourceId) return;
+      const targetId = targetLi.dataset.id;
+      if (dragSourceId === targetId) return;
+      reorderItems(dragSourceId, targetId);
+    }
+
+    function handleDragEnd() {
+      dragSourceId = null;
+      list.querySelectorAll('li.dragging, li.drag-over').forEach(el => {
+        el.classList.remove('dragging', 'drag-over');
+      });
+    }
+
+    function reorderItems(sourceId, targetId) {
+      const fromIndex = itemsState.findIndex(item => item.id === sourceId);
+      const toIndex = itemsState.findIndex(item => item.id === targetId);
+      if (fromIndex === -1 || toIndex === -1) return;
+      const [moved] = itemsState.splice(fromIndex, 1);
+      itemsState.splice(toIndex, 0, moved);
+      persistState();
+      renderList();
+    }
+
+    // Touch drag support
+    let touchDragEl = null;
+    let touchClone = null;
+    let touchStartY = 0;
+    let touchSourceId = null;
+
+    function handleTouchStart(e) {
+      const handle = e.target.closest('.drag-handle');
+      if (!handle) return;
+      const li = handle.closest('li');
+      if (!li) return;
+      touchSourceId = li.dataset.id;
+      touchDragEl = li;
+      touchStartY = e.touches[0].clientY;
+      touchClone = li.cloneNode(true);
+      touchClone.style.cssText = 'position:fixed;z-index:1000;pointer-events:none;opacity:0.85;width:' + li.offsetWidth + 'px;left:' + li.getBoundingClientRect().left + 'px;top:' + li.getBoundingClientRect().top + 'px;';
+      document.body.appendChild(touchClone);
+      li.classList.add('dragging');
+    }
+
+    function handleTouchMove(e) {
+      if (!touchDragEl) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      if (touchClone) {
+        touchClone.style.top = touch.clientY - touchClone.offsetHeight / 2 + 'px';
+      }
+      const target = document.elementFromPoint(touch.clientX, touch.clientY);
+      const targetLi = target?.closest('li');
+      list.querySelectorAll('li.drag-over').forEach(el => el.classList.remove('drag-over'));
+      if (targetLi && targetLi.dataset.id !== touchSourceId) {
+        targetLi.classList.add('drag-over');
+      }
+    }
+
+    function handleTouchEnd(e) {
+      if (!touchDragEl) return;
+      const overEl = list.querySelector('li.drag-over');
+      if (overEl && touchSourceId) {
+        reorderItems(touchSourceId, overEl.dataset.id);
+      } else {
+        touchDragEl.classList.remove('dragging');
+      }
+      if (touchClone) {
+        touchClone.remove();
+        touchClone = null;
+      }
+      list.querySelectorAll('li.drag-over').forEach(el => el.classList.remove('drag-over'));
+      touchDragEl = null;
+      touchSourceId = null;
+    }
+
     function renderList() {
       list.innerHTML = '';
       if (!itemsState.length) {
@@ -204,7 +322,9 @@
       itemsState.forEach((item) => {
         const li = document.createElement('li');
         li.dataset.id = item.id;
+        li.draggable = true;
         if (item.checked) li.classList.add('completed');
+        const handle = createDragHandle();
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.id = item.id;
@@ -214,17 +334,26 @@
         label.textContent = item.text;
         checkbox.addEventListener('change', () => toggleItem(item.id, checkbox.checked));
         li.addEventListener('click', (event) => {
-          if (event.target === checkbox || event.target.tagName === 'LABEL') {
+          if (event.target === checkbox || event.target.tagName === 'LABEL' || event.target.closest('.drag-handle')) {
             return;
           }
           checkbox.checked = !checkbox.checked;
           toggleItem(item.id, checkbox.checked);
         });
+        li.addEventListener('dragstart', handleDragStart);
+        li.addEventListener('dragover', handleDragOver);
+        li.addEventListener('dragleave', handleDragLeave);
+        li.addEventListener('drop', handleDrop);
+        li.addEventListener('dragend', handleDragEnd);
+        handle.addEventListener('touchstart', handleTouchStart, { passive: false });
+        li.appendChild(handle);
         li.appendChild(checkbox);
         li.appendChild(label);
         fragment.appendChild(li);
       });
       list.appendChild(fragment);
+      list.addEventListener('touchmove', handleTouchMove, { passive: false });
+      list.addEventListener('touchend', handleTouchEnd);
       updateControlButtons();
     }
 
