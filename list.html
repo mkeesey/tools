@@ -21,7 +21,7 @@
     button.danger { background: linear-gradient(135deg, #f96060, #de2d2d); box-shadow: 0 10px 25px rgba(222, 45, 45, 0.35); }
     button.danger:active { box-shadow: 0 6px 18px rgba(222, 45, 45, 0.4); }
     button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
-    .list-card { margin-top: 1.5rem; background: #fff; border: 1px solid #d7d9e2; border-radius: 16px; padding: 1rem; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04); }
+    .list-card { margin-top: 1rem; background: #fff; border: 1px solid #d7d9e2; border-radius: 16px; padding: 1rem; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04); }
     ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
     li { display: flex; align-items: center; gap: 0.65rem; background: #f7f8fc; border-radius: 12px; padding: 0.8rem; border: 1px solid #e7e9f2; transition: background 160ms ease, opacity 160ms ease; }
     .list-card label { flex: 1; cursor: pointer; margin: 0; color: inherit; }
@@ -61,6 +61,99 @@
     }
     input[type="checkbox"]:checked::after { opacity: 1; }
     .empty { color: #5a5d70; font-size: 0.95rem; }
+
+    /* ── Tab bar ── */
+    .tabs-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding-bottom: 2px;
+      margin-bottom: 0;
+    }
+    .tabs-bar::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      flex: none;
+      white-space: nowrap;
+      padding: 0.42rem 0.9rem;
+      border-radius: 10px;
+      border: 1px solid #d7d9e2;
+      background: #eff1f9;
+      color: #5a5d70;
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      box-shadow: none;
+      min-width: unset;
+      transition: background 150ms, color 150ms, border-color 150ms;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .tab-btn:active { transform: none; box-shadow: none; }
+    .tab-btn.active {
+      background: linear-gradient(135deg, #5b8def, #3f6fd0);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 4px 14px rgba(63, 111, 208, 0.28);
+    }
+    .tab-add-btn {
+      flex: none;
+      padding: 0.42rem 0.72rem;
+      border-radius: 10px;
+      border: 1px dashed #c8cad8;
+      background: transparent;
+      color: #8c91a8;
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: none;
+      min-width: unset;
+      touch-action: manipulation;
+      transition: background 150ms, color 150ms, border-color 150ms;
+    }
+    .tab-add-btn:hover { background: #eff1f9; color: #3f6fd0; border-color: #a8b0cc; }
+    .tab-add-btn:active { transform: none; box-shadow: none; }
+
+    /* ── Context menu ── */
+    .ctx-menu {
+      position: fixed;
+      z-index: 9999;
+      background: #fff;
+      border: 1px solid #d7d9e2;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
+      padding: 0.3rem;
+      min-width: 148px;
+    }
+    .ctx-menu button {
+      display: block;
+      width: 100%;
+      padding: 0.55rem 0.85rem;
+      border: none;
+      background: none;
+      color: #13141f;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-align: left;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: none;
+      min-width: unset;
+      flex: none;
+      touch-action: manipulation;
+    }
+    .ctx-menu button:hover { background: #eff1f9; }
+    .ctx-menu button:active { transform: none; box-shadow: none; }
+    .ctx-menu button.danger { color: #de2d2d; }
+    .ctx-menu button.danger:hover { background: #fef1f1; }
+    .ctx-menu button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .ctx-menu button:disabled:hover { background: none; }
+    .ctx-menu-sep { height: 1px; background: #e7e9f2; margin: 0.25rem 0; }
+
     @media (max-width: 640px) {
       body { background: #eef1f7; }
       main { padding: 1.25rem 0.85rem 2rem; }
@@ -92,6 +185,16 @@
       .empty { color: #a1a6c4; }
       .drag-handle { color: #5a5f7d; }
       li.drag-over { border-color: #7da8ff; box-shadow: 0 0 0 2px rgba(125,168,255,0.3); }
+      .tab-btn { background: #1a1e32; border-color: #2c3050; color: #9da3c7; }
+      .tab-btn.active { background: linear-gradient(135deg, #5b8def, #3f6fd0); color: #fff; border-color: transparent; }
+      .tab-add-btn { border-color: #2c3050; color: #6670a0; }
+      .tab-add-btn:hover { background: #1a1e32; color: #9fb6ff; border-color: #4a5280; }
+      .ctx-menu { background: #16192a; border-color: #2a2e45; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+      .ctx-menu button { color: #e5e7f1; }
+      .ctx-menu button:hover { background: #1e2135; }
+      .ctx-menu button.danger { color: #f96060; }
+      .ctx-menu button.danger:hover { background: #2a1818; }
+      .ctx-menu-sep { background: #2a2e45; }
     }
 
     @media (max-width: 640px) and (prefers-color-scheme: dark) {
@@ -108,6 +211,7 @@
 <body>
   <main>
     <h1>Quick List</h1>
+    <div class="tabs-bar" role="tablist" aria-label="Lists" id="tabs-bar"></div>
     <section class="list-card" aria-live="polite" aria-label="Generated checkbox list">
       <ul id="items-list"></ul>
       <p id="empty-note" class="empty">Nothing here yet. Add some items using the form below.</p>
@@ -132,47 +236,266 @@
     const emptyNote = document.getElementById('empty-note');
     const clearBtn = document.getElementById('clear-btn');
     const clearAllBtn = document.getElementById('clear-all-btn');
-    const STORAGE_KEY = 'quick-list-items';
+    const tabsBar = document.getElementById('tabs-bar');
 
-    let itemsState = loadItemsFromStorage();
+    const TABS_STORAGE_KEY = 'quick-list-tabs';
+    const LEGACY_STORAGE_KEY = 'quick-list-items';
+
+    // ── State ──────────────────────────────────────────────
+    let tabsState = [];        // [{id, name}, ...]
+    let activeTabId = null;
+    let itemsByTab = {};       // {tabId: [{id, text, checked}, ...]}
+    let itemsState = [];       // alias for itemsByTab[activeTabId]
+
+    loadState();
+    renderTabs();
     renderList();
 
+    // ── ID generation ──────────────────────────────────────
     function generateId() {
-      if (window.crypto?.randomUUID) {
-        return window.crypto.randomUUID();
-      }
-      return `item-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+      if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+      return `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
     }
 
-    function loadItemsFromStorage() {
+    // ── Storage ────────────────────────────────────────────
+    function loadState() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return [];
-        const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed)) return [];
-        return parsed
-          .map((item, index) => {
-            if (!item || typeof item.text !== 'string') return null;
-            return {
-              id: typeof item.id === 'string' ? item.id : `restored-${index}-${Date.now()}`,
-              text: item.text,
-              checked: Boolean(item.checked),
-            };
-          })
-          .filter(Boolean);
-      } catch {
-        return [];
-      }
+        const raw = localStorage.getItem(TABS_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.tabs) && parsed.tabs.length > 0) {
+            tabsState = parsed.tabs.filter(t => t && typeof t.id === 'string' && typeof t.name === 'string');
+            if (tabsState.length > 0) {
+              itemsByTab = {};
+              for (const tab of tabsState) {
+                const items = parsed.itemsByTab?.[tab.id];
+                itemsByTab[tab.id] = Array.isArray(items) ? validateItems(items) : [];
+              }
+              activeTabId = (typeof parsed.activeTabId === 'string' && tabsState.find(t => t.id === parsed.activeTabId))
+                ? parsed.activeTabId
+                : tabsState[0].id;
+              itemsState = itemsByTab[activeTabId];
+              return;
+            }
+          }
+        }
+      } catch { /* fall through to default */ }
+
+      // No tabs state found — migrate legacy single-list data if present
+      const firstId = generateId();
+      tabsState = [{ id: firstId, name: 'My List' }];
+      activeTabId = firstId;
+      let legacyItems = [];
+      try {
+        const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
+        if (legacyRaw) {
+          const parsed = JSON.parse(legacyRaw);
+          if (Array.isArray(parsed)) legacyItems = validateItems(parsed);
+        }
+      } catch { /* ignore */ }
+      itemsByTab[firstId] = legacyItems;
+      itemsState = itemsByTab[firstId];
+    }
+
+    function validateItems(items) {
+      return items
+        .map((item, index) => {
+          if (!item || typeof item.text !== 'string') return null;
+          return {
+            id: typeof item.id === 'string' ? item.id : `restored-${index}-${Date.now()}`,
+            text: item.text,
+            checked: Boolean(item.checked),
+          };
+        })
+        .filter(Boolean);
     }
 
     function persistState() {
+      // Sync itemsState back into itemsByTab before serialising
+      itemsByTab[activeTabId] = itemsState;
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(itemsState));
-      } catch {
-        // Ignore storage failures (e.g., private mode)
+        localStorage.setItem(TABS_STORAGE_KEY, JSON.stringify({ tabs: tabsState, activeTabId, itemsByTab }));
+      } catch { /* Ignore storage failures (e.g., private mode) */ }
+    }
+
+    // ── Tab management ─────────────────────────────────────
+    function renderTabs() {
+      tabsBar.innerHTML = '';
+
+      tabsState.forEach(tab => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'tab-btn' + (tab.id === activeTabId ? ' active' : '');
+        btn.textContent = tab.name;
+        btn.dataset.tabId = tab.id;
+        btn.setAttribute('role', 'tab');
+        btn.setAttribute('aria-selected', tab.id === activeTabId ? 'true' : 'false');
+
+        btn.addEventListener('click', () => switchTab(tab.id));
+
+        // Right-click (desktop context menu affordance)
+        btn.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          showContextMenu(e.clientX, e.clientY, tab.id);
+        });
+
+        // Long press (mobile affordance) — 500 ms hold
+        // Capture coordinates immediately (touches list is live and may be empty in the callback)
+        let longPressTimer = null;
+        btn.addEventListener('touchstart', (e) => {
+          const touch = e.touches[0];
+          const x = touch.clientX, y = touch.clientY;
+          longPressTimer = setTimeout(() => {
+            showContextMenu(x, y, tab.id);
+          }, 500);
+        }, { passive: true });
+        const cancelLongPress = () => clearTimeout(longPressTimer);
+        btn.addEventListener('touchend', cancelLongPress);
+        btn.addEventListener('touchmove', cancelLongPress);
+        btn.addEventListener('touchcancel', cancelLongPress);
+
+        tabsBar.appendChild(btn);
+      });
+
+      // "+" button to add a new list
+      const addBtn = document.createElement('button');
+      addBtn.type = 'button';
+      addBtn.className = 'tab-add-btn';
+      addBtn.textContent = '+';
+      addBtn.title = 'Add new list';
+      addBtn.setAttribute('aria-label', 'Add new list');
+      addBtn.addEventListener('click', addTab);
+      tabsBar.appendChild(addBtn);
+    }
+
+    function switchTab(id) {
+      if (activeTabId === id) return;
+      activeTabId = id;
+      itemsState = itemsByTab[id] || [];
+      persistState();
+      renderTabs();
+      renderList();
+    }
+
+    function addTab() {
+      const id = generateId();
+      const name = `List ${tabsState.length + 1}`;
+      tabsState.push({ id, name });
+      itemsByTab[id] = [];
+      activeTabId = id;
+      itemsState = itemsByTab[id];
+      persistState();
+      renderTabs();
+      renderList();
+      // Scroll to reveal the new tab
+      tabsBar.scrollLeft = tabsBar.scrollWidth;
+    }
+
+    function renameTab(tabId) {
+      const tab = tabsState.find(t => t.id === tabId);
+      if (!tab) return;
+      const newName = window.prompt('Rename list:', tab.name);
+      if (newName === null) return; // cancelled
+      const trimmed = newName.trim();
+      if (!trimmed) return; // empty — ignore
+      tab.name = trimmed;
+      persistState();
+      renderTabs();
+    }
+
+    function deleteTab(tabId) {
+      if (tabsState.length <= 1) return; // safety guard
+      const tab = tabsState.find(t => t.id === tabId);
+      if (!tab) return;
+      const count = (itemsByTab[tabId] || []).length;
+      const itemsMsg = count > 0
+        ? ` and its ${count} item${count === 1 ? '' : 's'}`
+        : '';
+      if (!window.confirm(`Delete "${tab.name}"${itemsMsg}? This cannot be undone.`)) return;
+
+      const idx = tabsState.findIndex(t => t.id === tabId);
+      tabsState.splice(idx, 1);
+      delete itemsByTab[tabId];
+
+      if (activeTabId === tabId) {
+        const newIdx = Math.max(0, Math.min(idx, tabsState.length - 1));
+        activeTabId = tabsState[newIdx].id;
+        itemsState = itemsByTab[activeTabId] || [];
+      }
+
+      persistState();
+      renderTabs();
+      renderList();
+    }
+
+    // ── Context menu ───────────────────────────────────────
+    let activeMenu = null;
+
+    function showContextMenu(x, y, tabId) {
+      dismissContextMenu();
+
+      const menu = document.createElement('div');
+      menu.className = 'ctx-menu';
+      menu.setAttribute('role', 'menu');
+
+      const renameBtn = document.createElement('button');
+      renameBtn.type = 'button';
+      renameBtn.textContent = 'Rename';
+      renameBtn.setAttribute('role', 'menuitem');
+      renameBtn.addEventListener('click', () => { dismissContextMenu(); renameTab(tabId); });
+
+      const sep = document.createElement('div');
+      sep.className = 'ctx-menu-sep';
+      sep.setAttribute('role', 'separator');
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.textContent = 'Delete list';
+      deleteBtn.className = 'danger';
+      deleteBtn.setAttribute('role', 'menuitem');
+      if (tabsState.length <= 1) {
+        deleteBtn.disabled = true;
+        deleteBtn.title = 'Cannot delete the only list';
+      } else {
+        deleteBtn.addEventListener('click', () => { dismissContextMenu(); deleteTab(tabId); });
+      }
+
+      menu.appendChild(renameBtn);
+      menu.appendChild(sep);
+      menu.appendChild(deleteBtn);
+      document.body.appendChild(menu);
+      activeMenu = menu;
+
+      // Position: keep inside viewport
+      const mw = 160, mh = 88;
+      let left = x, top = y;
+      if (left + mw > window.innerWidth - 8) left = window.innerWidth - mw - 8;
+      if (top + mh > window.innerHeight - 8) top = y - mh;
+      if (top < 8) top = 8;
+      menu.style.left = left + 'px';
+      menu.style.top = top + 'px';
+
+      // Dismiss on outside click / touch
+      setTimeout(() => {
+        document.addEventListener('pointerdown', onOutsidePointer, { capture: true });
+      }, 0);
+    }
+
+    function onOutsidePointer(e) {
+      if (activeMenu && !activeMenu.contains(e.target)) {
+        dismissContextMenu();
       }
     }
 
+    function dismissContextMenu() {
+      if (activeMenu) {
+        activeMenu.remove();
+        activeMenu = null;
+      }
+      document.removeEventListener('pointerdown', onOutsidePointer, { capture: true });
+    }
+
+    // ── Input helpers ──────────────────────────────────────
     function parseInputLines() {
       return textarea.value
         .split(/\r\n?|\n|\r|\u2028|\u2029/)
@@ -186,11 +509,7 @@
         textarea.value = '';
         return;
       }
-      const newItems = lines.map(text => ({
-        id: generateId(),
-        text,
-        checked: false,
-      }));
+      const newItems = lines.map(text => ({ id: generateId(), text, checked: false }));
       const unchecked = itemsState.filter(item => !item.checked);
       const checked = itemsState.filter(item => item.checked);
       itemsState = [...unchecked, ...newItems, ...checked];
@@ -199,6 +518,7 @@
       textarea.value = '';
     }
 
+    // ── Drag handle ────────────────────────────────────────
     function createDragHandle() {
       const handle = document.createElement('span');
       handle.className = 'drag-handle';
@@ -207,6 +527,7 @@
       return handle;
     }
 
+    // ── Mouse drag-and-drop ────────────────────────────────
     let dragSourceId = null;
 
     function handleDragStart(e) {
@@ -258,7 +579,7 @@
       renderList();
     }
 
-    // Touch drag support
+    // ── Touch drag-and-drop ────────────────────────────────
     let touchDragEl = null;
     let touchClone = null;
     let touchOffsetY = 0;
@@ -311,6 +632,7 @@
       touchSourceId = null;
     }
 
+    // ── List rendering ─────────────────────────────────────
     function renderList() {
       list.innerHTML = '';
       if (!itemsState.length) {
@@ -330,9 +652,9 @@
         checkbox.type = 'checkbox';
         checkbox.id = item.id;
         checkbox.checked = item.checked;
-        const label = document.createElement('label');
-        label.setAttribute('for', item.id);
-        label.textContent = item.text;
+        const lbl = document.createElement('label');
+        lbl.setAttribute('for', item.id);
+        lbl.textContent = item.text;
         checkbox.addEventListener('change', () => toggleItem(item.id, checkbox.checked));
         li.addEventListener('click', (event) => {
           if (event.target === checkbox || event.target.tagName === 'LABEL' || event.target.closest('.drag-handle')) {
@@ -348,7 +670,7 @@
         li.addEventListener('dragend', handleDragEnd);
         li.appendChild(handle);
         li.appendChild(checkbox);
-        li.appendChild(label);
+        li.appendChild(lbl);
         fragment.appendChild(li);
       });
       list.appendChild(fragment);
@@ -359,6 +681,7 @@
     list.addEventListener('touchmove', handleTouchMove, { passive: false });
     list.addEventListener('touchend', handleTouchEnd);
 
+    // ── Item actions ───────────────────────────────────────
     function toggleItem(id, checked) {
       itemsState = itemsState.map(item =>
         item.id === id ? { ...item, checked } : item
@@ -373,24 +696,18 @@
 
     function clearCheckedItems() {
       const nextState = itemsState.filter(item => !item.checked);
-      if (nextState.length === itemsState.length) {
-        return;
-      }
+      if (nextState.length === itemsState.length) return;
       itemsState = nextState;
       persistState();
       renderList();
     }
 
     function clearAllItems() {
-      if (!itemsState.length) {
-        return;
-      }
+      if (!itemsState.length) return;
       const message = itemsState.length === 1
         ? 'Remove the only item in your list?'
         : `Remove all ${itemsState.length} items?`;
-      if (!window.confirm(`${message} This action cannot be undone.`)) {
-        return;
-      }
+      if (!window.confirm(`${message} This action cannot be undone.`)) return;
       itemsState = [];
       persistState();
       renderList();
@@ -398,25 +715,18 @@
 
     function updateControlButtons() {
       const hasChecked = itemsState.some(item => item.checked);
-      if (clearBtn) {
-        clearBtn.disabled = !hasChecked;
-      }
-      if (clearAllBtn) {
-        clearAllBtn.disabled = itemsState.length === 0;
-      }
+      if (clearBtn) clearBtn.disabled = !hasChecked;
+      if (clearAllBtn) clearAllBtn.disabled = itemsState.length === 0;
     }
 
+    // ── Form & keyboard ────────────────────────────────────
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       addItemsFromInput();
     });
 
-    if (clearBtn) {
-      clearBtn.addEventListener('click', clearCheckedItems);
-    }
-    if (clearAllBtn) {
-      clearAllBtn.addEventListener('click', clearAllItems);
-    }
+    if (clearBtn) clearBtn.addEventListener('click', clearCheckedItems);
+    if (clearAllBtn) clearAllBtn.addEventListener('click', clearAllItems);
 
     function isEnterKey(event) {
       const key = event.key || event.code || '';
@@ -430,21 +740,15 @@
       event.preventDefault();
       event.stopPropagation();
       addItemsFromInput();
-      setTimeout(() => {
-        shortcutLocked = false;
-      }, 0);
+      setTimeout(() => { shortcutLocked = false; }, 0);
     }
 
     textarea.addEventListener('keydown', (event) => {
-      if (event.shiftKey && isEnterKey(event)) {
-        triggerAddShortcut(event);
-      }
+      if (event.shiftKey && isEnterKey(event)) triggerAddShortcut(event);
     });
 
     textarea.addEventListener('keypress', (event) => {
-      if (event.shiftKey && isEnterKey(event)) {
-        triggerAddShortcut(event);
-      }
+      if (event.shiftKey && isEnterKey(event)) triggerAddShortcut(event);
     });
   </script>
 </body>
