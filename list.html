@@ -252,7 +252,7 @@
 
     // ── ID generation ──────────────────────────────────────
     function generateId() {
-      if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+      if (window.crypto?.randomUUID) { return window.crypto.randomUUID(); }
       return `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
     }
 
@@ -291,7 +291,7 @@
     function validateItems(items) {
       return items
         .map((item, index) => {
-          if (!item || typeof item.text !== 'string') return null;
+          if (!item || typeof item.text !== 'string') { return null; }
           return {
             id: typeof item.id === 'string' ? item.id : `restored-${index}-${Date.now()}`,
             text: item.text,
@@ -360,7 +360,7 @@
     }
 
     function switchTab(id) {
-      if (activeTabId === id) return;
+      if (activeTabId === id) { return; }
       activeTabId = id;
       itemsState = itemsByTab[id] || [];
       persistState();
@@ -384,25 +384,25 @@
 
     function renameTab(tabId) {
       const tab = tabsState.find(t => t.id === tabId);
-      if (!tab) return;
+      if (!tab) { return; }
       const newName = window.prompt('Rename list:', tab.name);
-      if (newName === null) return; // cancelled
+      if (newName === null) { return; } // cancelled
       const trimmed = newName.trim();
-      if (!trimmed) return; // empty — ignore
+      if (!trimmed) { return; } // empty — ignore
       tab.name = trimmed;
       persistState();
       renderTabs();
     }
 
     function deleteTab(tabId) {
-      if (tabsState.length <= 1) return; // safety guard
+      if (tabsState.length <= 1) { return; } // safety guard
       const tab = tabsState.find(t => t.id === tabId);
-      if (!tab) return;
+      if (!tab) { return; }
       const count = (itemsByTab[tabId] || []).length;
       const itemsMsg = count > 0
         ? ` and its ${count} item${count === 1 ? '' : 's'}`
         : '';
-      if (!window.confirm(`Delete "${tab.name}"${itemsMsg}? This cannot be undone.`)) return;
+      if (!window.confirm(`Delete "${tab.name}"${itemsMsg}? This cannot be undone.`)) { return; }
 
       const idx = tabsState.findIndex(t => t.id === tabId);
       tabsState.splice(idx, 1);
@@ -460,9 +460,9 @@
       // Position: keep inside viewport
       const mw = 160, mh = 88;
       let left = x, top = y;
-      if (left + mw > window.innerWidth - 8) left = window.innerWidth - mw - 8;
-      if (top + mh > window.innerHeight - 8) top = y - mh;
-      if (top < 8) top = 8;
+      if (left + mw > window.innerWidth - 8) { left = window.innerWidth - mw - 8; }
+      if (top + mh > window.innerHeight - 8) { top = y - mh; }
+      if (top < 8) { top = 8; }
       menu.style.left = left + 'px';
       menu.style.top = top + 'px';
 
@@ -523,7 +523,7 @@
 
     function handleDragStart(e) {
       const li = e.target.closest('li');
-      if (!li) return;
+      if (!li) { return; }
       dragSourceId = li.dataset.id;
       li.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
@@ -534,22 +534,22 @@
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
       const li = e.target.closest('li');
-      if (!li || li.dataset.id === dragSourceId) return;
+      if (!li || li.dataset.id === dragSourceId) { return; }
       list.querySelectorAll('li.drag-over').forEach(el => el.classList.remove('drag-over'));
       li.classList.add('drag-over');
     }
 
     function handleDragLeave(e) {
       const li = e.target.closest('li');
-      if (li) li.classList.remove('drag-over');
+      if (li) { li.classList.remove('drag-over'); }
     }
 
     function handleDrop(e) {
       e.preventDefault();
       const targetLi = e.target.closest('li');
-      if (!targetLi || !dragSourceId) return;
+      if (!targetLi || !dragSourceId) { return; }
       const targetId = targetLi.dataset.id;
-      if (dragSourceId === targetId) return;
+      if (dragSourceId === targetId) { return; }
       reorderItems(dragSourceId, targetId);
     }
 
@@ -563,7 +563,7 @@
     function reorderItems(sourceId, targetId) {
       const fromIndex = itemsState.findIndex(item => item.id === sourceId);
       const toIndex = itemsState.findIndex(item => item.id === targetId);
-      if (fromIndex === -1 || toIndex === -1) return;
+      if (fromIndex === -1 || toIndex === -1) { return; }
       const [moved] = itemsState.splice(fromIndex, 1);
       itemsState.splice(toIndex, 0, moved);
       persistState();
@@ -578,9 +578,9 @@
 
     function handleTouchStart(e) {
       const handle = e.target.closest('.drag-handle');
-      if (!handle) return;
+      if (!handle) { return; }
       const li = handle.closest('li');
-      if (!li) return;
+      if (!li) { return; }
       touchSourceId = li.dataset.id;
       touchDragEl = li;
       const rect = li.getBoundingClientRect();
@@ -592,7 +592,7 @@
     }
 
     function handleTouchMove(e) {
-      if (!touchDragEl) return;
+      if (!touchDragEl) { return; }
       e.preventDefault();
       const touch = e.touches[0];
       if (touchClone) {
@@ -607,7 +607,7 @@
     }
 
     function handleTouchEnd(e) {
-      if (!touchDragEl) return;
+      if (!touchDragEl) { return; }
       const overEl = list.querySelector('li.drag-over');
       if (overEl && touchSourceId) {
         reorderItems(touchSourceId, overEl.dataset.id);
@@ -637,7 +637,7 @@
         const li = document.createElement('li');
         li.dataset.id = item.id;
         li.draggable = true;
-        if (item.checked) li.classList.add('completed');
+        if (item.checked) { li.classList.add('completed'); }
         const handle = createDragHandle();
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
@@ -687,18 +687,18 @@
 
     function clearCheckedItems() {
       const nextState = itemsState.filter(item => !item.checked);
-      if (nextState.length === itemsState.length) return;
+      if (nextState.length === itemsState.length) { return; }
       itemsState = nextState;
       persistState();
       renderList();
     }
 
     function clearAllItems() {
-      if (!itemsState.length) return;
+      if (!itemsState.length) { return; }
       const message = itemsState.length === 1
         ? 'Remove the only item in your list?'
         : `Remove all ${itemsState.length} items?`;
-      if (!window.confirm(`${message} This action cannot be undone.`)) return;
+      if (!window.confirm(`${message} This action cannot be undone.`)) { return; }
       itemsState = [];
       persistState();
       renderList();
@@ -706,8 +706,8 @@
 
     function updateControlButtons() {
       const hasChecked = itemsState.some(item => item.checked);
-      if (clearBtn) clearBtn.disabled = !hasChecked;
-      if (clearAllBtn) clearAllBtn.disabled = itemsState.length === 0;
+      if (clearBtn) { clearBtn.disabled = !hasChecked; }
+      if (clearAllBtn) { clearAllBtn.disabled = itemsState.length === 0; }
     }
 
     // ── Form & keyboard ────────────────────────────────────
@@ -716,8 +716,8 @@
       addItemsFromInput();
     });
 
-    if (clearBtn) clearBtn.addEventListener('click', clearCheckedItems);
-    if (clearAllBtn) clearAllBtn.addEventListener('click', clearAllItems);
+    if (clearBtn) { clearBtn.addEventListener('click', clearCheckedItems); }
+    if (clearAllBtn) { clearAllBtn.addEventListener('click', clearAllItems); }
 
     function isEnterKey(event) {
       const key = event.key || event.code || '';
@@ -726,7 +726,7 @@
 
     let shortcutLocked = false;
     function triggerAddShortcut(event) {
-      if (shortcutLocked) return;
+      if (shortcutLocked) { return; }
       shortcutLocked = true;
       event.preventDefault();
       event.stopPropagation();
@@ -735,11 +735,11 @@
     }
 
     textarea.addEventListener('keydown', (event) => {
-      if (event.shiftKey && isEnterKey(event)) triggerAddShortcut(event);
+      if (event.shiftKey && isEnterKey(event)) { triggerAddShortcut(event); }
     });
 
     textarea.addEventListener('keypress', (event) => {
-      if (event.shiftKey && isEnterKey(event)) triggerAddShortcut(event);
+      if (event.shiftKey && isEnterKey(event)) { triggerAddShortcut(event); }
     });
   </script>
 </body>
