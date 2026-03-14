@@ -239,7 +239,6 @@
     const tabsBar = document.getElementById('tabs-bar');
 
     const TABS_STORAGE_KEY = 'quick-list-tabs';
-    const LEGACY_STORAGE_KEY = 'quick-list-items';
 
     // ── State ──────────────────────────────────────────────
     let tabsState = [];        // [{id, name}, ...]
@@ -281,19 +280,11 @@
         }
       } catch { /* fall through to default */ }
 
-      // No tabs state found — migrate legacy single-list data if present
+      // No tabs state found — start with one empty default list
       const firstId = generateId();
       tabsState = [{ id: firstId, name: 'My List' }];
       activeTabId = firstId;
-      let legacyItems = [];
-      try {
-        const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
-        if (legacyRaw) {
-          const parsed = JSON.parse(legacyRaw);
-          if (Array.isArray(parsed)) legacyItems = validateItems(parsed);
-        }
-      } catch { /* ignore */ }
-      itemsByTab[firstId] = legacyItems;
+      itemsByTab[firstId] = [];
       itemsState = itemsByTab[firstId];
     }
 
