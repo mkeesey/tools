@@ -225,7 +225,7 @@
       </div>
       <label for="items">Items</label>
       <textarea id="items" name="items" placeholder="Milk&#10;Bread&#10;Eggs" aria-describedby="helper"></textarea>
-      <p id="helper" class="empty">Each line becomes its own checkbox item.</p>
+      <p id="helper" class="empty">Separate items with commas or newlines. Each item becomes its own checkbox.</p>
     </form>
   </main>
 
@@ -489,7 +489,7 @@
     // ── Input helpers ──────────────────────────────────────
     function parseInputLines() {
       return textarea.value
-        .split(/\r\n?|\n|\r|\u2028|\u2029/)
+        .split(/,|\r\n?|\n|\r|\u2028|\u2029/)
         .map(line => line.trim())
         .filter(Boolean);
     }
